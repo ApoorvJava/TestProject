@@ -82,9 +82,6 @@ pip install -r requirements.txt
 - [admin.py](admin.py) - This is a default admin file in which have registered all the three models so a user or admin can directly do CRUD 
   operations through admin page 
 
-
-```
-
 ## Running web service
 ```
 (env) PS DataProject\mysite> python manage.py runserver

@@ -95,3 +95,6 @@ Quit the server with CTRL-BREAK.
 
 ```
 
+Screenshots of api's in browser can be found in `screenshots` folder.
+
+

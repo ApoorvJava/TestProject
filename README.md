@@ -7,6 +7,7 @@
 - Used django custom command for ingestion of data into database(sqlite)
 - Authenticated users and admin can do CRUD operations in all models through api's.
 - defaults parameters for pages
+
     ```
     DEFAULT_PAGE = 1
     DEFAULT_PAGE_LIMIT = 1000

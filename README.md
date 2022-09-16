@@ -1,43 +1,31 @@
-# Description
-- Python automation to ingest data into SQLite database
+# Summary
+- Python automation using pandas to ingest data into SQLite database
 - Ability to analyze data and create new data model from Data Analysis
-- Used Django and Djangorestframework for implementation
-- Rest api's to show all models data with some added filters
-- Log file for error handling exceptions
-- Used django custom command for ingestion of data into database(sqlite)
-- Authenticated users and admin can do CRUD operations in all models through api's.
+- Used flask for implementation
+- Api's to show all models data with some added filters
+- Used uitls.py file for ingestion of data into database(sqlite)
 - default parameters for pages
 
-  ```
-  DEFAULT_PAGE = 1
-  DEFAULT_PAGE_LIMIT = 1000
-  ```
- 
-# Questions
 
-## Problem 1 - Data Modeling
-- All the data models `Weather, Results, Yield`can be found in [models.py](models.py)
-    These were developed to work with Django ORM and SQLite as the DB.
+## Data Modeling
+**Weather Data**:
+Each StationID text file (under wx_data) contains its respective annual precipitation, maximum and minimum temperatures. All data entries are tab separated. Hence, `pandas` is used for quick parsing. Using Pandas, the data is converted into data frames and a column is added to indicate which StationID the data corresponds to. ID column added to use it as a Primary Key. The dataframe conversion is handled using the function `create_weather_df()` defined in `utils.py`.
+** Yield Data**:
+Similar to weather data parsing, the yield data is also parsed using pandas by converting the data into a dataframe which is handled using the function `create_yield_df()` defined in `utils.py`.
 
-## Problem 2 - Ingestion
-- Using models from above file, [models_data.py](models_data.py) ingests data into SQLite DB.
-- Made a list for all_objects and then used bulk_create method to add all the objects at once in the DB for a specific model.
-  To run the file we can use the following command
-  
-  ```
-  python manage.py mycommand
-  ```
-- Here my command refers to the django custom command file `mycommand.py` which run the functions
-  from the `models_data.py` file
-- If the script is run twice, it will ignore the duplicate entries as have added a condtion that 
-  comapares the values with all objects in the specific models.
+## Ingestion
+Using `sqlite3` and `pandas` modules the weather and yield data frames are converted to respective weather and yield tables in the newly created weather_yield.db file. This is achieved using `create_weather_table()` and `create_yield_table()` functions defined in `utils.py`.
 
-## Problem 3 - Data Analysis
-- `Results` table holds the stats associated with weather, all the stats are stored per year & station_id combo
-- While ingestion of data, ignored the entire row if any of the values has invalid entry -9999
-- `ResultsData` function from `models_data.py` file has all the script which stores the data into `Results` table
+## Data Analysis
+Since the weather data is already made available in the form of a dataframe, `Pandas` is used to perform data analysis.
+For every year and every Station ID, the average annual precipitation, annual average maximum and minimum temperatures are computed and stored in a new resultant data frame.
+All entries containing -9999 are ignored for any calculations.
+Upon storing the resultant data in the form of a dataframe, `pandas` and `sqlite3` modules are used again for creating the `result` table in `weather_yield.db` which holds the computed weather data. All the data are stored with respective Year, StationID columns.
 
-## Problem 4 - REST API
+*Note*: Usage of `utils.py` helps generate the final `weather_yield.db` file which is then imported in the Flask API.
+#### Usage: ```python utils.py```
+
+## API
 Implemented 3 endpoints that return JSON
 - `/api/weather`
     - Query parameters
@@ -61,37 +49,80 @@ pip install -r requirements.txt
 ```
 
 ## File layout
-- [models_data.py](models_data.py) - script responsible for populating Weather ,Yield and Results data sets.
-  While populating Results, it takes the Weather stats table and in `ResultsData` funtion it splits the average minimum, maximum temperatures and total precipitation     data and stores it in `Results` table. 
+- **utils.py** : Contains modules to create weather_yield.db databases with 3 tables: 
+*Weather:* Table containing daily weather data for each StationID (precipitation, maximum and minimum temperatures)
+*Yield:* Table containing year and the respective annual crop yield.
+*Result:* Table containing the weather stats like the annual average rainfall, average maximum and minimum temperatures ignoring the entries containing -9999.
+ The modules available under utils.py:
+ write_log(msg:str):
+   Creates/updates error logs in log.txt file within the parent directory
+   Args:
+       msg (str): Error message which needs to be appended in the log.txt file.
+* create_weather_df() -> pd.DataFrame:
+   Scans the wx_data directory for all weather data available in StationID.txt files and collates all data into a dataframe
+ 
+   Returns:
+       pd.DataFrame: weather dataframe
+* create_weather_table(db:str, weather_df:pd.DataFrame):
+   Adds weather table into source db using Weather data frame information containing relevant temperature, precipitation and station ID information
+ 
+   Args:
+       db (str): source database path
+       weather_df (pd.DataFrame): weather dataframe
+* create_yield_df() -> pd.DataFrame:
+   Scans the yld_data direcotry for all weather data available in all yield files and collates all data into a dataframe
+ 
+   Returns:
+       pd.DataFrame: Yield dataframe
+* create_yield_table(db:str, yield_df:pd.DataFrame):
+   Adds yield table into source db using yield dataframe information containing relevant temperature, precipitation and station ID information
+ 
+   Args:
+       db (str): source database path
+       yield_df (pd.DataFrame): yield dataframe
+* create_resultant_df(weather_df:pd.DataFrame) -> pd.DataFrame
+Computes the average weather stats for each station ID for each year. 
+   Returns:
+       pd.DataFrame: Yield dataframe
+* create_resultant_table(db:str, res_df:pd.DataFrame):
+   Adds result table into source db using result dataframe information containing relevant average temperatures, avg precipitation and station IDs for each year
+ 
+   Args:
+       db (str): source database path
+       res_df (pd.DataFrame): resultant dataframe
 
-- [views.py](views.py) - This has all the API View classes which have inherited django backend filters
 
-- [serializers.py](serializers.py) - This file converts the model data into a json format to use in the API view format
+- **app.py** : 
+db_connect() : Using this to connect with the database 
+index() : Display all pages url for the api’s
+weather() : Display all weather data from the db
+weather_id(id) : Display the weather data for specific id
+weather_stationid(id) : Display the weather data for specific station id
+yield_data() : Display all the yield data
+yield_data_id(id) : Display the yield data for specific id
+yield_data_year(year) : Display the yield data for specific year
+result_data() : Display all the result data
+result_data_year(year) : Display all the result data for specific year
+result_data_station_id(station_id) : Display all the result data for specific station id
 
-- [urls.py](urls.py) - In this have used routers for the routing of the view functions
+
+- Routes: URLs for app.py:
     - `/api/weather`
     - `/api/weather/stats`
     - `/api/yield`
 
-- [models.py](.py) - Contains code related to initial setup of SQLite DB
-
-- [models.py](models.py) - Contains all the three data models Weather, Results & Yield
-
-- [mycommands.py](mycommands.py) - Contains a custom handle funtion to run the models_data.py file funtions for ingestion of the data into DB
-
-- [admin.py](admin.py) - This is a default admin file in which have registered all the three models so a user or admin can directly do CRUD 
-  operations through admin page 
 
 ## Running web service
 ```
-(env) PS DataProject\mysite> python manage.py runserver
-Watching for file changes with StatReloader
-Performing system checks...
-
-System check identified no issues (0 silenced).
-Django version 4.1, using settings 'mysite.settings'
-Starting development server at http://127.0.0.1:8000/
-Quit the server with CTRL-BREAK.
+(env) PS code_task> & env/Scripts/python.exe code_task/app.py
+ * Serving Flask app 'app'
+ * Debug mode: on
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on http://127.0.0.1:5000
+Press CTRL+C to quit
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 319-060-339
 
 ```
 
@@ -100,43 +131,27 @@ Screenshots of api's in browser can be found in `screenshots` folder.
 ## Sample linter run
 
 ```
-(env) PS C:\Users\dell\Desktop\java\Weather_data\mysite\site_app> pylint models.py
+(env) PS code_task> pylint app.py
 
 -------------------------------------------------------------------
-Your code has been rated at 10.00/10 (previous run: 9.38/10, +0.62)
+Your code has been rated at 10.00/10 (previous run: 9.58/10, +0.42)
+
+(env) PS code_task> pylint utils.py
+
+-------------------------------------------------------------------
+Your code has been rated at 10.00/10 (previous run: 9.18/10, +0.82)
+
 ```
 
 ## Sample code formatter run
 
 ```
-(env) PS Weather_data> black .\mysite\
+(env) PS code_task> black .\code_task\
+reformatted code_task\utils.py
+reformatted code_task\app.py
+
 All done! ✨ 🍰 ✨
-19 files changed.
-```
-
-## Sample coverage test run
+2 files reformatted.
 
 ```
-(env) Weather_data\mysite> python manage.py test     
-Found 1 test(s).
-Creating test database for alias 'default'...
-System check identified no issues (0 silenced).
-.
-----------------------------------------------------------------------
-Ran 1 test in 0.019s
 
-OK
-Destroying test database for alias 'default'...
-```
-
-## Sample coverage report run
-
-```
-(env) Weather_data\mysite\site_app> coverage report -m     
-Name       Stmts   Miss  Cover   Missing
-----------------------------------------
-tests.py      13     12     8%   2-18
-----------------------------------------
-TOTAL         13     12     8%
-
-```

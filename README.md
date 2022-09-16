@@ -97,4 +97,46 @@ Quit the server with CTRL-BREAK.
 
 Screenshots of api's in browser can be found in `screenshots` folder.
 
+## Sample linter run
 
+```
+(env) PS C:\Users\dell\Desktop\java\Weather_data\mysite\site_app> pylint models.py
+
+-------------------------------------------------------------------
+Your code has been rated at 10.00/10 (previous run: 9.38/10, +0.62)
+```
+
+## Sample code formatter run
+
+```
+(env) PS Weather_data> black .\mysite\
+All done! ✨ 🍰 ✨
+19 files changed.
+```
+
+## Sample coverage test run
+
+```
+(env) Weather_data\mysite> python manage.py test     
+Found 1 test(s).
+Creating test database for alias 'default'...
+System check identified no issues (0 silenced).
+.
+----------------------------------------------------------------------
+Ran 1 test in 0.019s
+
+OK
+Destroying test database for alias 'default'...
+```
+
+## Sample coverage report run
+
+```
+(env) Weather_data\mysite\site_app> coverage report -m     
+Name       Stmts   Miss  Cover   Missing
+----------------------------------------
+tests.py      13     12     8%   2-18
+----------------------------------------
+TOTAL         13     12     8%
+
+```

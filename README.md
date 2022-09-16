@@ -8,9 +8,9 @@
 
 
 ## Data Modeling
-**Weather Data**:
+**Weather Data** :
 Each StationID text file (under wx_data) contains its respective annual precipitation, maximum and minimum temperatures. All data entries are tab separated. Hence, `pandas` is used for quick parsing. Using Pandas, the data is converted into data frames and a column is added to indicate which StationID the data corresponds to. ID column added to use it as a Primary Key. The dataframe conversion is handled using the function `create_weather_df()` defined in `utils.py`.
-** Yield Data**:
+** Yield Data** :
 Similar to weather data parsing, the yield data is also parsed using pandas by converting the data into a dataframe which is handled using the function `create_yield_df()` defined in `utils.py`.
 
 ## Ingestion

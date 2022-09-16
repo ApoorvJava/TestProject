@@ -43,8 +43,10 @@ Implemented 3 endpoints that return JSON
 # Setup to run
 - Developed and tested the application on `Win 11` with `Python 3.8.12`
 ```
-py -m venv venv
+py -m venv env
+
 .\env\Scripts\activate
+
 pip install -r requirements.txt
 ```
 
@@ -107,14 +109,22 @@ result_data_station_id(station_id) : Display all the result data for specific st
 
 
 - Routes: URLs for app.py:
-    - `/api/weather`
+    - `/api/weather` : This may take some time to load as we our loading all weather data consisting of 18,778,45 records. 
+    We can also use generators for minimizing the loading time.
     - `/api/weather/stats`
     - `/api/yield`
 
 
 ## Running web service
 ```
-(env) PS code_task> & env/Scripts/python.exe code_task/app.py
+(env) PS code_task> python utils.py
+ * Adding data in database 
+```
+
+# Run app.py
+After this you can use the API's
+```
+(env) PS code_task> python app.py
  * Serving Flask app 'app'
  * Debug mode: on
 WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
